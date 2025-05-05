@@ -1,0 +1,62 @@
+[versions]
+agp = "8.9.2" # 统一 AGP 版本
+kotlin = "2.1.20" # 示例 Kotlin 版本
+coreKtx = "1.16.0" # 示例版本
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.7" # 更新 lifecycle 版本
+activityCompose = "1.10.1"
+composeBom = "2025.04.01" # 使用最新的 Compose BOM
+# ksp = "1.9.24-1.0.20" # KSP 版本需要匹配 Kotlin 版本
+ksp = "2.1.20-2.0.1" # 示例 KSP 版本 for Kotlin 2.0.0
+# androidGradlePlugin = "8.4.1" # 已有 agp，这个可以移除或统一
+materialIcons = "1.7.8"
+navigationCompose = "2.8.9"
+lifecycle = "2.8.7" # 用于 ViewModel 等
+room = "2.7.1"
+coroutines = "1.8.1"
+datastore = "1.1.5"
+securityCrypto = "1.0.0" # 使用稳定版，或按需选择 alpha/beta
+googleMaterial = "1.12.0" # 添加 Material Components 版本
+kotlinSerialization = "1.8.1" # 添加 kotlinx-serialization 版本 (请使用最新稳定版)
+composeMarkdown = "0.5.7" # 检查并使用最新的稳定版本
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
+material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" } # 添加库
+compose-markdown = { group = "com.github.jeziellago", name = "compose-markdown", version.ref = "composeMarkdown" } # 添加库
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" } # 使用 agp 版本
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" } # 添加插件别名 (版本通常跟随 kotlin 插件)
+
+# [bundles] # 如果需要，可以定义 bundles
+
