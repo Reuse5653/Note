@@ -29,10 +29,6 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         return repository.getNoteById(id)
     }
 
-    fun insert(note: Note) = viewModelScope.launch { repository.insert(note) }
-
-    fun update(note: Note) = viewModelScope.launch { repository.update(note) }
-
     fun delete(note: Note) = viewModelScope.launch { repository.delete(note) }
 
     fun deleteNotesByIds(ids: List<Int>) = viewModelScope.launch {
@@ -40,13 +36,36 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     }
 
     /**
+     * Saves a note. Inserts if id is 0, updates otherwise.
+     */
+    suspend fun saveNote(note: Note) {
+        if (note.id == 0) {
+            // Ensure timestamp is set for new notes if not already done
+            val noteToInsert = if (note.timestamp == 0L) {
+                note.copy(timestamp = System.currentTimeMillis())
+            } else {
+                note
+            }
+            repository.insert(noteToInsert)
+        } else {
+            // Ensure timestamp is updated for existing notes
+             val noteToUpdate = note.copy(timestamp = System.currentTimeMillis())
+            repository.update(noteToUpdate)
+        }
+    }
+
+    /**
      * 导出笔记为 JSON 字符串。
      * @param idsToExport 可选的笔记 ID 列表。如果为 null 或空，则导出所有笔记。
+     * @param includeImages 是否在导出的 JSON 中包含图像数据。
      * @param includeDrawings 是否在导出的 JSON 中包含绘图数据。
+     * @param includeRecordings 是否在导出的 JSON 中包含录音数据。
      */
     suspend fun exportNotesToJsonString(
         idsToExport: List<Int>? = null,
-        includeDrawings: Boolean // 新增参数
+        includeImages: Boolean = false, // 新增参数
+        includeDrawings: Boolean = false, // 新增参数
+        includeRecordings: Boolean = false // 新增参数
     ): String = withContext(Dispatchers.IO) {
         val currentNotes = allNotes.first()
         val notesToFilter = if (idsToExport.isNullOrEmpty()) {
@@ -89,6 +108,22 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
             e.printStackTrace()
             null
         }
+    }
+
+    /**
+     * 复制现有笔记或基于当前标题/内容创建新笔记（如果 noteId 为 null）。
+     */
+    suspend fun duplicateNote(noteId: Int?, currentTitle: String, currentContent: String) {
+        val originalNote = if (noteId != null) repository.getNoteById(noteId).first() else null
+
+        val noteToDuplicate = Note(
+            // id = 0, // Let Room 自动生成新 ID
+            title = originalNote?.title ?: currentTitle,
+            content = originalNote?.content ?: currentContent,
+            timestamp = System.currentTimeMillis()
+            // TODO: 如果 originalNote 不为 null，则复制图像/绘图/录音数据
+        )
+        saveNote(noteToDuplicate)
     }
 }
 

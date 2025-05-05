@@ -80,8 +80,8 @@ dependencies {
     // 添加 Kotlinx Serialization JSON 库
     implementation(libs.kotlinx.serialization.json)
 
-    // 添加 Compose Markdown 库 (请检查最新版本)
-    implementation(libs.compose.markdown)
+    // 移除 Compose Markdown 库
+    // implementation(libs.compose.markdown)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -20,7 +20,6 @@ datastore = "1.1.5"
 securityCrypto = "1.0.0" # 使用稳定版，或按需选择 alpha/beta
 googleMaterial = "1.12.0" # 添加 Material Components 版本
 kotlinSerialization = "1.8.1" # 添加 kotlinx-serialization 版本 (请使用最新稳定版)
-composeMarkdown = "0.5.7" # 检查并使用最新的稳定版本
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,15 +47,12 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" } # 添加库
-compose-markdown = { group = "com.github.jeziellago", name = "compose-markdown", version.ref = "composeMarkdown" } # 添加库
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" } # 使用 agp 版本
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" } # 添加插件别名 (版本通常跟随 kotlin 插件)
-
-# [bundles] # 如果需要，可以定义 bundles
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 

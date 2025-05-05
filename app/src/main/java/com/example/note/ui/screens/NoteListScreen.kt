@@ -45,8 +45,11 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
-import dev.jeziellago.compose.markdown.Markdown // 导入 Markdown Composable
 import androidx.compose.ui.draw.clip // 导入 clip
+import androidx.compose.material.icons.filled.Redo // 导入 Redo 图标
+import androidx.compose.material.icons.filled.Undo // 导入 Undo 图标
+import androidx.compose.material.icons.filled.Brush // 导入 Brush 图标
+import androidx.compose.material.icons.filled.Rectangle // 导入 Eraser (用 Rectangle 替代) 图标
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -68,6 +71,12 @@ fun NoteListScreen(
 
     // State to hold IDs for the export triggered
     var idsToExportState by remember { mutableStateOf<List<Int>?>(null) }
+    // --- State for export options ---
+    var showExportDialog by remember { mutableStateOf(false) }
+    var includeImagesExport by remember { mutableStateOf(false) }
+    var includeDrawingsExport by remember { mutableStateOf(false) }
+    var includeRecordingsExport by remember { mutableStateOf(false) }
+    // --- End State for export options ---
 
     // --- ActivityResultLaunchers ---
     val exportLauncher = rememberLauncherForActivityResult(
@@ -77,12 +86,19 @@ fun NoteListScreen(
                 val ids = idsToExportState
                 coroutineScope.launch {
                     try {
-                        // TODO: 弹出对话框让用户选择是否包含绘图
-                        val includeDrawings = false // 暂时硬编码为 false
+                        // --- Get export options from state ---
+                        val includeImages = includeImagesExport
+                        val includeDrawings = includeDrawingsExport
+                        val includeRecordings = includeRecordingsExport
+                        // --- End Get export options ---
 
                         val jsonString = noteViewModel.exportNotesToJsonString(
                             idsToExport = ids,
-                            includeDrawings = includeDrawings // 传递标志
+                            // --- Pass flags to ViewModel ---
+                            includeImages = includeImages,
+                            includeDrawings = includeDrawings,
+                            includeRecordings = includeRecordings
+                            // --- End Pass flags ---
                         )
                         withContext(Dispatchers.IO) {
                             context.contentResolver.openOutputStream(targetUri)?.use { outputStream ->
@@ -97,21 +113,86 @@ fun NoteListScreen(
                         snackbarHostState.showSnackbar("导出失败: ${e.message}")
                     } finally {
                         idsToExportState = null // Reset state after handling
+                        // --- Reset export option states ---
+                        showExportDialog = false
+                        includeImagesExport = false
+                        includeDrawingsExport = false
+                        includeRecordingsExport = false
+                        // --- End Reset export option states ---
                     }
                 }
             } ?: run { idsToExportState = null } // Reset state if user cancels
         }
     )
 
-    // Function to trigger export, setting the state first
-    fun triggerExport(ids: List<Int>? = null) {
-        idsToExportState = ids // Set the state before launching
-        val exportAll = ids.isNullOrEmpty()
-        val baseFileName = if (exportAll) "notes_export_all" else "notes_export_selected"
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val suggestedName = "${baseFileName}_$timestamp.json"
-        exportLauncher.launch(suggestedName)
+    // Function to show export dialog and then trigger export
+    fun showExportOptionsAndTrigger(ids: List<Int>? = null) {
+        idsToExportState = ids // Set the IDs to export
+        // Reset options before showing dialog
+        includeImagesExport = false
+        includeDrawingsExport = false
+        includeRecordingsExport = false
+        showExportDialog = true // Show the dialog
     }
+
+    // --- Export Options Dialog ---
+    if (showExportDialog) {
+        AlertDialog(
+            onDismissRequest = { showExportDialog = false },
+            title = { Text("导出选项") },
+            text = {
+                Column {
+                    // TODO: Add actual image/drawing/recording fields to Note model
+                    //       before enabling these checkboxes.
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = includeImagesExport,
+                            onCheckedChange = { includeImagesExport = it },
+                            enabled = false // Enable when feature is implemented
+                        )
+                        Text("包含图片 (待实现)")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = includeDrawingsExport,
+                            onCheckedChange = { includeDrawingsExport = it },
+                            enabled = false // Enable when feature is implemented
+                        )
+                        Text("包含绘图 (待实现)")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = includeRecordingsExport,
+                            onCheckedChange = { includeRecordingsExport = it },
+                            enabled = false // Enable when feature is implemented
+                        )
+                        Text("包含录音 (待实现)")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showExportDialog = false // Close dialog
+                        // Trigger the actual export launcher
+                        val exportAll = idsToExportState.isNullOrEmpty()
+                        val baseFileName = if (exportAll) "notes_export_all" else "notes_export_selected"
+                        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                        val suggestedName = "${baseFileName}_$timestamp.json"
+                        exportLauncher.launch(suggestedName)
+                    }
+                ) {
+                    Text("导出")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showExportDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+    // --- End Export Options Dialog ---
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -184,15 +265,15 @@ fun NoteListScreen(
                             clearSelection()
                         }
                     },
-                    onExportSelectedClick = { // Pass selected IDs to triggerExport
-                        triggerExport(selectedNoteIds.toList())
+                    onExportSelectedClick = { // Show dialog before exporting selected
+                        showExportOptionsAndTrigger(selectedNoteIds.toList())
                     }
                 )
             } else {
                 // 普通顶部栏，添加菜单
                 NormalTopAppBar(
-                    onExportAllClick = { // Pass null to triggerExport for all notes
-                        triggerExport(null)
+                    onExportAllClick = { // Show dialog before exporting all
+                        showExportOptionsAndTrigger(null)
                     },
                     onImportClick = {
                         importLauncher.launch(arrayOf("application/json"))
@@ -344,21 +425,17 @@ fun NoteItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 使用 Markdown Composable 显示内容
-            // 注意：这可能不支持所有 Markdown 功能，且性能可能需要优化
-            // 可能需要限制显示的行数或高度
-            Box(modifier = Modifier
-                .defaultMinSize(minHeight = 48.dp) // 最小高度
-                .heightIn(max = 150.dp) // 限制最大高度
-            ) {
-                 Markdown(
-                    content = note.content,
-                    // 可以配置颜色等，参考库文档
-                    // colors = ...
-                    // typography = ...
-                    modifier = Modifier.fillMaxWidth()
-                 )
-            }
+            // 使用 Text 显示内容预览
+            Text(
+                text = note.content,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 5, // 限制预览行数
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 48.dp) // 保持最小高度
+                    .heightIn(max = 150.dp) // 限制最大高度
+            )
 
             // --- 结束文本内容 ---
 
