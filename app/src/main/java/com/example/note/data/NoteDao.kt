@@ -14,7 +14,7 @@ interface NoteDao {
 
     // 插入笔记，如果冲突则替换旧笔记
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNote(note: Note) // 使用 suspend 关键字，表示在协程中执行
+    suspend fun insert(note: Note): Long // 修改返回类型为 Long
 
     // 更新笔记
     @Update
@@ -38,10 +38,20 @@ interface NoteDao {
     fun getNoteById(id: Int): Flow<Note?> // 返回 Flow<Note?>，因为可能找不到对应 ID 的笔记
 
     // 修改 Insert，让其返回生成的 Long ID
-    @Insert // 默认冲突策略为 ABORT，但因为我们传入 id=0，所以总是插入
+    @Insert(onConflict = OnConflictStrategy.IGNORE) // 或者 REPLACE，取决于导入逻辑
     suspend fun insertAndGetId(note: Note): Long
 
     // 保留 Upsert (如果其他地方需要)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(note: Note)
+
+    // --- 添加 update 方法 ---
+    @Update
+    suspend fun update(note: Note)
+    // --- 结束添加 ---
+
+    // --- 添加 delete 方法 ---
+    @Delete
+    suspend fun delete(note: Note)
+    // --- 结束添加 ---
 }

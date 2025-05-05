@@ -50,6 +50,9 @@ import androidx.compose.material.icons.filled.Redo // 导入 Redo 图标
 import androidx.compose.material.icons.filled.Undo // 导入 Undo 图标
 import androidx.compose.material.icons.filled.Brush // 导入 Brush 图标
 import androidx.compose.material.icons.filled.Rectangle // 导入 Eraser (用 Rectangle 替代) 图标
+import com.example.note.data.ContentBlock // Import ContentBlock
+import com.example.note.data.contentJson // Import contentJson
+import kotlinx.serialization.decodeFromString // Ensure decodeFromString is imported
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -399,66 +402,67 @@ fun SelectionTopAppBar(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteItem(
     note: Note,
     isSelected: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier // Keep the modifier parameter
 ) {
+    // --- 解析内容以生成预览文本 ---
+    val contentPreview = remember(note.content) {
+        try {
+            val blocks = contentJson.decodeFromString<List<ContentBlock>>(note.content)
+            blocks.filterIsInstance<ContentBlock.TextBlock>()
+                .joinToString("\n") { it.text.trim() } // 连接所有文本块的文本，用换行符分隔
+                .take(150) // 限制预览长度
+        } catch (e: Exception) {
+            // 解析失败，可能是旧的纯文本格式，直接显示
+            note.content.take(150) // 同样限制长度
+        }
+    }
+    // --- End 解析内容 ---
+
     Card(
-        modifier = modifier, // 应用传入的 modifier (包含 clickable 和 fillMaxWidth)
+        // --- Remove the inner combinedClickable modifier ---
+        modifier = modifier // Apply the modifier passed from the outside
+            .fillMaxWidth() // Ensure Card fills width if modifier doesn't specify
+            .padding(vertical = 4.dp, horizontal = 8.dp), // Keep padding or adjust as needed
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        // Card 内部结构修改为 Column
+        // ... Column with Text elements ...
         Column(
-             modifier = Modifier.padding(16.dp) // 内边距应用给 Column
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
         ) {
-            // --- 文本内容 ---
             Text(
-                text = note.title,
+                text = note.title.ifBlank { "无标题" }, // 显示标题，空则显示 "无标题"
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1, // 标题限制行数
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
-
-            // 使用 Text 显示内容预览
+            // --- 显示解析后的预览文本 ---
             Text(
-                text = note.content,
+                text = contentPreview.ifBlank { "无内容" }, // 显示内容预览，空则显示 "无内容"
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 5, // 限制预览行数
+                maxLines = 3, // 限制预览行数
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 48.dp) // 保持最小高度
-                    .heightIn(max = 150.dp) // 限制最大高度
-            )
-
-            // --- 结束文本内容 ---
-
-            // --- 移除旧的绘图显示逻辑 ---
-            // note.drawing?.let { ... } // 整块移除
-            // --- 结束移除 ---
-
-            // TODO: 在这里添加绘图叠加层的显示逻辑 (如果 note.drawingOverlayData 不为 null)
-            // 这需要解析 drawingOverlayData 并使用 Canvas 绘制
-
-            Spacer(modifier = Modifier.height(8.dp)) // 确保与时间戳之间有间距
-            Text(
-                text = formatTimestamp(note.timestamp),
-                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            // --- End 显示预览文本 ---
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = formatTimestamp(note.timestamp), // 显示时间戳
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
             )
         }
     }
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestamp))
 }
 
 @Preview(showBackground = true, name = "Note Item Preview")

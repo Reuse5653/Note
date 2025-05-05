@@ -20,6 +20,7 @@ datastore = "1.1.5"
 securityCrypto = "1.0.0" # 使用稳定版，或按需选择 alpha/beta
 googleMaterial = "1.12.0" # 添加 Material Components 版本
 kotlinSerialization = "1.8.1" # 添加 kotlinx-serialization 版本 (请使用最新稳定版)
+coilCompose = "2.7.0" # 添加 Coil 版本 (请使用最新稳定版)
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +49,7 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" } # 添加 Coil Compose 库
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" } # 使用 agp 版本

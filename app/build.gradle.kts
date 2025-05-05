@@ -80,6 +80,9 @@ dependencies {
     // 添加 Kotlinx Serialization JSON 库
     implementation(libs.kotlinx.serialization.json)
 
+    // 添加 Coil for Compose
+    implementation(libs.coil.compose)
+
     // 移除 Compose Markdown 库
     // implementation(libs.compose.markdown)
 
